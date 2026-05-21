@@ -43,7 +43,7 @@ def write_report(
     lines.append("## 2. 样本股票池说明")
     lines.append(pool_desc)
     symbols_line = ", ".join(pool_symbols)
-    lines.append(f"本次手工维护代码：**{symbols_line}**。说明：筛选范围有限，只对样本负责，不构成投资建议。")
+    lines.append(f"本次维护代码：**{symbols_line}**。说明：筛选范围有限，只对样本负责，不构成投资建议。")
     lines.append("")
     lines.append("## 3. 综合评分最高（样本池内排名第一，视作相对更受关注标的）")
     lines.extend(_stock_detail_lines(best_detail))

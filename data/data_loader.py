@@ -1,9 +1,12 @@
 """
 使用 akshare 拉取沪深 A 股日线 OHLCV，并标准化字段名。
+
+日线接口使用 `stock_zh_a_daily`（新浪财经），相较东财 `stock_zh_a_hist` 通常更稳一些。
 """
 
 from __future__ import annotations
 
+import datetime as dt
 from typing import Optional
 
 import pandas as pd
@@ -17,7 +20,7 @@ else:
     _AK_IMPORT_ERROR = None
 
 
-# akshare stock_zh_a_hist 常见中文列 → 英文字段
+# 兼容部分列名为中文或英文（版本差异）
 _COL_MAP = {
     "日期": "date",
     "开盘": "open",
@@ -26,7 +29,6 @@ _COL_MAP = {
     "最低": "low",
     "成交量": "volume",
     "成交额": "amount",
-    # 备用英文名
     "date": "date",
     "open": "open",
     "high": "high",
@@ -35,6 +37,20 @@ _COL_MAP = {
     "volume": "volume",
     "amount": "amount",
 }
+
+
+def _to_sina_symbol(code: str) -> str:
+    """
+    将 6 位股票代码转为新浪格式：沪市 sh600519，深市 sz000858 / sz300750。
+
+    说明：不含北交所（bjxxx）、沪市 5 开头的基金/ETF 等；若需可自行扩展映射。
+    """
+    s = str(code).strip()
+    if not s.isdigit() or len(s) != 6:
+        raise ValueError(f"股票代码应为 6 位数字，收到: {code!r}")
+    if s.startswith("6"):
+        return f"sh{s}"
+    return f"sz{s}"
 
 
 def load_daily_ohlcv(
@@ -50,10 +66,14 @@ def load_daily_ohlcv(
     if ak is None:
         raise ImportError(f"请先安装 akshare: pip install akshare. 原因: {_AK_IMPORT_ERROR}")
 
-    raw = ak.stock_zh_a_hist(
-        symbol=symbol,
-        period="daily",
-        start_date=start_date or "20180101",
+    sina_sym = _to_sina_symbol(symbol)
+    start = start_date or "20180101"
+    end = dt.date.today().strftime("%Y%m%d")
+
+    raw = ak.stock_zh_a_daily(
+        symbol=sina_sym,
+        start_date=start,
+        end_date=end,
         adjust=adjust,
     )
     if raw is None or raw.empty:
@@ -66,7 +86,6 @@ def load_daily_ohlcv(
     required = {"date", "open", "high", "low", "close", "volume"}
     missing = required - set(df.columns)
     if missing:
-        # 兼容部分版本列名为英文大小写混合
         for old, new in _COL_MAP.items():
             if old in raw.columns and new not in df.columns:
                 df[new] = raw[old]
@@ -76,7 +95,6 @@ def load_daily_ohlcv(
 
     df["date"] = pd.to_datetime(df["date"])
 
-    # 成交额可能缺失或为 0
     if "amount" not in df.columns:
         df["amount"] = pd.to_numeric(df["close"], errors="coerce") * pd.to_numeric(
             df["volume"], errors="coerce"

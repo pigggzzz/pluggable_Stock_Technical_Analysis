@@ -79,8 +79,8 @@ def plot_distribution(
     ax.grid(axis="y", linestyle=":", alpha=0.45)
 
     zone_handles = [
-        mpatches.Patch(facecolor=_color_for_bin(RECOMMENDED_MIN + 10), edgecolor="#333333", label="≥75（推荐区）"),
-        mpatches.Patch(facecolor=_color_for_bin(62), edgecolor="#333333", label="50–75（中性区）"),
+        mpatches.Patch(facecolor=_color_for_bin(RECOMMENDED_MIN + 10), edgecolor="#333333", label="≥70（推荐区）"),
+        mpatches.Patch(facecolor=_color_for_bin(62), edgecolor="#333333", label="50–70（中性区）"),
         mpatches.Patch(facecolor=_color_for_bin(30), edgecolor="#333333", label="<50（不推荐区）"),
     ]
     avg_line_handle = mlines.Line2D(

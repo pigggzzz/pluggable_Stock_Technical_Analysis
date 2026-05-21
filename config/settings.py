@@ -13,7 +13,7 @@ RANK_XLSX = OUTPUT_DIR / "rankings.xlsx"
 SCORE_DIST_PNG = OUTPUT_DIR / "score_distribution.png"
 
 # 数据起始日（月线 MA120 等需要足够历史）
-DEFAULT_START_DATE = "20200101"
+DEFAULT_START_DATE = "20130101"
 
 # 时间框架加权
 TF_WEIGHTS = {
@@ -23,5 +23,5 @@ TF_WEIGHTS = {
 }
 
 # 推荐阈值（0~100 综合分）
-RECOMMENDED_MIN = 75.0
+RECOMMENDED_MIN = 70.0
 NEUTRAL_MIN = 50.0
